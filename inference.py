@@ -275,7 +275,7 @@ class Solver:
     
     def _gpt(self, prompt):
         ret = {}
-        response = openai.Completion.create(engine="lg-multimodal-lms-gpt3",
+        response = openai.Completion.create(engine="...",
                                             prompt=prompt,
                                             temperature=0,
                                             max_tokens=0,
