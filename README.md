@@ -6,5 +6,5 @@
 !pip install accelerate
 !pip install bitsandbytes
 
-$python3 task.py config load_dir save_dir
+python3 task.py config load_dir save_dir
 ```
