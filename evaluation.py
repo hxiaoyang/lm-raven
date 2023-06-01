@@ -1,30 +1,20 @@
+import argparse
 import json
 import numpy as np
 from os.path import exists
 
 
-save_dir = ""
-
-
-def load_data(file_name):
-    with open(file_name, "r") as f:
+def load_data(path):
+    with open(path, "r") as f:
         data = json.load(f)
     return data
 
 
-def merge_files(file_names, out_file_name):
-    logprobs = {}
-    for file_name in file_names:
-        logprobs = {**logprobs, **load_data(file_name)}    
-    json.dump(logprobs, open(out_file_name, 'w'), indent=1)
-    return
-
-
-def evaluate(file_name):
-    b = int(file_name.split("_")[-2][-1])
+def evaluate(path):
+    b = int(path.split("_")[-2][-1])
     if b:
         ret = {"master": [0, 0], "ensemble": [0, 0]}
-        data = load_data(file_name)
+        data = load_data(path)
         for comp_dicts in data.values():
             master_logprobs = []
             ensemble_logprobs = []
@@ -53,7 +43,7 @@ def evaluate(file_name):
         return ret
     else:
         ret = [0,0]
-        data = load_data(file_name)
+        data = load_data(path)
         for prob_dict in data.values():
             logprobs = []
             for i in range(8):
@@ -63,3 +53,15 @@ def evaluate(file_name):
                 ret[0] += 1
             ret[1] += 1
         return ret
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path")
+    args = parser.parse_args()
+    print(evaluate(args.path))
+    return
+
+
+if __name__ == "__main__":
+    main()

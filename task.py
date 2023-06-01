@@ -1,12 +1,10 @@
-import numpy as np
-import xml.etree.ElementTree as ET
+import argparse
 import json
+import numpy as np
+import random
 from tqdm import tqdm
+import xml.etree.ElementTree as ET
 import zipfile
-
-
-load_dir = ""
-save_dir = ""
 
 
 def to_list(s):
@@ -44,6 +42,7 @@ def get_sample(file_name, target):
                                 ent_dict["Type"] = entity.attrib["Type"]
                                 ent_dict["Size"] = entity.attrib["Size"]
                                 ent_dict["Color"] = entity.attrib["Color"]
+                                ent_dict["Angle"] = entity.attrib["Angle"]
                                 if "Distribute" in layout.attrib["name"]:
                                     pos = to_list(entity.attrib["bbox"])
                                     comp_dict["positions"].append(pos)
@@ -64,7 +63,7 @@ def get_sample(file_name, target):
     return {"rules":rules, "rpm":rpm}
 
 
-def get_config(config):
+def extract(config, load_dir, save_dir):
     samples = {}
     for i in tqdm(range(10000)):
         if i%10 < 6:
@@ -80,3 +79,17 @@ def get_config(config):
     save_fn = "{}/{}.json".format(save_dir, config)
     json.dump(samples, open(save_fn, 'w'), indent=1)
     return
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config")
+    parser.add_argument("--load_dir")
+    parser.add_argument("--save_dir")
+    args = parser.parse_args()
+    extract(args.config, args.load_dir, args.save_dir)
+    return
+
+
+if __name__ == "__main__":
+    main()
