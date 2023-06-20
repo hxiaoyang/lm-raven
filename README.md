@@ -12,7 +12,7 @@ Official GitHub repository for ACL 2023 paper [In-Context Analogical Reasoning w
 $ pip install -r requirements.txt
 ```
 
-### Usage
+## Usage
 * `task.py` transcribes task data.
 * Optional: `images.py` visualizes a given RPM.
 * `inference.py` applies specified language model on transcribed data.
