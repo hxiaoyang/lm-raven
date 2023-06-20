@@ -1,17 +1,23 @@
 # In-Context Analogical Reasoning with Pre-Trained Language Models
-
 Official GitHub repository for ACL 2023 paper [In-Context Analogical Reasoning with Pre-Trained Language Models](https://arxiv.org/abs/2305.17626).
 
 ## Getting Started
 
-### Python Dependencies
+### Datasets
+* Download RAVEN-10000 [here](https://drive.google.com/file/d/111swnEzAY2NfZgeyAhVwQujMjRUfeyuY/view); learn more [here](http://wellyzhang.github.io/project/raven.html).
+* Follow instructions [here](https://github.com/husheng12345/SRAN) to generate the I-RAVEN dataset; learn more [here](https://arxiv.org/abs/2002.06838).
 
+### Python Dependencies
 ```
 pip install -r requirements.txt
 ```
 
 ### Usage
-
+* `task.py` transcribes task data.
+* Optional: `images.py` visualizes a given RPM.
+* `inference.py` applies specified language model on transcribed data. GPT-3 requires an API key whereas OPT models require sufficient GPU memory. If you wish to experiment on a different subset of RAVEN, replace `subset.json`.
+* `evaluation.py` evaluates model performance.
+* For example:
 ```
 python task.py --config center_single --load_dir ~/lm-raven --save_dir ~/lm-raven
 python images.py --config center_single --index 3044 --load_dir ~/lm-raven --save_dir ~/lm-raven
@@ -20,7 +26,6 @@ python evaluation.py --path ~/lm-raven/center_single_500_gpt-3_b1_n3.json
 ```
 
 ## Cite
-
 ```
 @inproceedings{hu2023context,
   title={In-Context Analogical Reasoning with Pre-Trained Language Models},
