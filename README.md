@@ -20,7 +20,7 @@ $ pip install -r requirements.txt
   * `opt` models (e.g., `opt-125m`, `opt-1.3b`, `opt-13b` etc.) require sufficient GPU memory.
   * Argument `b = 0,1` controls whether or not to branch over components and attributes.
   * Argument `n = 1,2,3` controls the number of rows to include.
-  * If you wish to experiment with a different subset of RAVEN, replace `subset.json`.
+  * If you wish to experiment with another random subset of RAVEN, replace `subset.json`.
 * `evaluation.py` evaluates model performance.
 * For example:
 ```
