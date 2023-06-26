@@ -22,7 +22,8 @@ $ pip install -r requirements.txt
   * Argument `n = 1,2,3` controls the number of rows to include.
   * If you wish to experiment with another random subset of RAVEN, replace `subset.json`.
 * `evaluation.py` evaluates model performance.
-* For example:
+
+## Examples
 ```
 $ python task.py --config center_single --load_dir ~/lm-raven --save_dir ~/lm-raven
 $ python images.py --config center_single --index 3044 --load_dir ~/lm-raven --save_dir ~/lm-raven
@@ -30,7 +31,7 @@ $ python inference.py --model_name gpt-3 --api_key sk-1234 --config center_singl
 $ python evaluation.py --path ~/lm-raven/center_single_500_gpt-3_b1_n3.json
 ```
 
-## Cite
+## Citation
 ```
 @inproceedings{hu2023context,
   title={In-Context Analogical Reasoning with Pre-Trained Language Models},
