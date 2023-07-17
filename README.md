@@ -1,5 +1,5 @@
 # In-Context Analogical Reasoning with Pre-Trained Language Models
-Official GitHub repository for ACL 2023 paper [In-Context Analogical Reasoning with Pre-Trained Language Models](https://arxiv.org/abs/2305.17626).
+Official GitHub repository for ACL 2023 paper [In-Context Analogical Reasoning with Pre-Trained Language Models](https://aclanthology.org/2023.acl-long.109/).
 
 ## Getting Started
 
