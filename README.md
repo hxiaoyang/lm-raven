@@ -4,8 +4,8 @@ Official GitHub repository for ACL 2023 paper [In-Context Analogical Reasoning w
 ## Getting Started
 
 ### Datasets
-* Download RAVEN-10000 [here](https://drive.google.com/file/d/111swnEzAY2NfZgeyAhVwQujMjRUfeyuY/view); learn more [here](http://wellyzhang.github.io/project/raven.html).
-* Follow instructions [here](https://github.com/husheng12345/SRAN) to generate the I-RAVEN dataset; learn more [here](https://arxiv.org/abs/2002.06838).
+* Download RAVEN-10000 [here](https://drive.google.com/file/d/111swnEzAY2NfZgeyAhVwQujMjRUfeyuY/view).
+* Follow instructions [here](https://github.com/husheng12345/SRAN) to generate the I-RAVEN dataset.
 
 ### Python Dependencies
 ```
