@@ -295,6 +295,8 @@ class Solver:
                 scores = self._gpt(prompt)
             if self.model_name[:3] == "opt":
                 scores = self._opt(prompt)
+            if self.model_name[:3] == "mistral":
+                scores = self._mistral(prompt)
             if self.model_name == "null":
                 scores = 0
             ret.append(scores)
@@ -329,6 +331,20 @@ class Solver:
         token_logprobs = [lp.detach().numpy()[0] for lp in token_logprobs]
         i = len(self.tokenizer(self.context, return_tensors="pt").input_ids[0]) - 2
         return {"tokens": tokens[i:], "token_logprobs": token_logprobs[i:]}
+    
+    def _mistral(self, prompt):
+        ret = {}
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
+        tokens = self.tokenizer.convert_ids_to_tokens(input_ids[0][1:])
+        token_logprobs = []
+        logits = self.model(input_ids).logits
+        all_tokens_logprobs = log_softmax(logits.double(), dim=2)
+        for k in range(1, input_ids.shape[1]):
+            token_logprobs.append(all_tokens_logprobs[:,k-1,input_ids[0,k]])
+        token_logprobs = [lp.detach().numpy()[0] for lp in token_logprobs]
+        i = len(self.tokenizer(self.context, return_tensors="pt").input_ids[0]) - 2
+        return {"tokens": tokens[i:], "token_logprobs": token_logprobs[i:]}
+    
 
 
 def main():
@@ -358,6 +374,34 @@ def main():
                                                      max_memory=max_memory)
         tokenizer = AutoTokenizer.from_pretrained("facebook/"+args.model_name,
                                                   use_fast=False)
+    if args.model_name[:3] == "mistral":
+        torch.cuda.empty_cache()
+        free_in_GB = int(torch.cuda.mem_get_info()[0]/1024**3)
+        max_memory = f'{free_in_GB-2}GB'
+        n_gpus = torch.cuda.device_count()
+        max_memory = {i: max_memory for i in range(n_gpus)}
+        print(max_memory)
+        model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-v0.1",
+                                                     device_map='auto',
+                                                     load_in_8bit=True,
+                                                     max_memory=max_memory)
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-v0.1",
+                                                  use_fast=False)
+        
+    if args.model_name[:3] == "mistral_instruct":
+        torch.cuda.empty_cache()
+        free_in_GB = int(torch.cuda.mem_get_info()[0]/1024**3)
+        max_memory = f'{free_in_GB-2}GB'
+        n_gpus = torch.cuda.device_count()
+        max_memory = {i: max_memory for i in range(n_gpus)}
+        print(max_memory)
+        model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1",
+                                                     device_map='auto',
+                                                     load_in_8bit=True,
+                                                     max_memory=max_memory)
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1",
+                                                  use_fast=False)
+
     s = Solver(args.model_name, model=model, tokenizer=tokenizer)
     s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle)
     return
