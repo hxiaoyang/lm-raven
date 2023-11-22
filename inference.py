@@ -272,6 +272,8 @@ class Solver:
                             scores = self._gpt(prompt)
                         if self.model_name[:3] == "opt":
                             scores = self._opt(prompt)
+                        if self.model_name[:3] == "mistral":
+                            scores = self._mistral(prompt)
                         if self.model_name == "null":
                             scores = 0
                     ret[i][j].append(scores)
