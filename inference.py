@@ -272,7 +272,7 @@ class Solver:
                             scores = self._gpt(prompt)
                         if self.model_name[:3] == "opt":
                             scores = self._opt(prompt)
-                        if self.model_name[:3] == "mistral":
+                        if self.model_name == "mistral":
                             scores = self._mistral(prompt)
                         if self.model_name == "null":
                             scores = 0
@@ -297,7 +297,7 @@ class Solver:
                 scores = self._gpt(prompt)
             if self.model_name[:3] == "opt":
                 scores = self._opt(prompt)
-            if self.model_name[:3] == "mistral":
+            if self.model_name == "mistral":
                 scores = self._mistral(prompt)
             if self.model_name == "null":
                 scores = 0
