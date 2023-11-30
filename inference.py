@@ -221,12 +221,12 @@ class RPM:
 
 
 class Solver:
-    def __init__(self, model_name, model=None, tokenizer=None):
+    def __init__(self, model_name, model=None, tokenizer=None, prefix=""):
         self.model_name = model_name
         self.model = model
         self.tokenizer = tokenizer
         self.output = {}
-        self.prefix = "let's think step by step. "
+        self.prefix = prefix
         self.context = None
         self.choice_scores = {}
 
@@ -356,6 +356,8 @@ def main():
     parser.add_argument("--config")
     parser.add_argument("-b", type=int)
     parser.add_argument("-n", type=int)
+    parser.add_argument("-k", type=int)
+    parser.add_argument("--prompt_dir")
     parser.add_argument("--load_dir")
     parser.add_argument("--save_dir")
     parser.add_argument("--add_angle", action='store_true')
@@ -376,7 +378,7 @@ def main():
                                                      max_memory=max_memory)
         tokenizer = AutoTokenizer.from_pretrained("facebook/"+args.model_name,
                                                   use_fast=False)
-    if args.model_name[:3] == "mistral":
+    if args.model_name == "mistral":
         torch.cuda.empty_cache()
         free_in_GB = int(torch.cuda.mem_get_info()[0]/1024**3)
         max_memory = f'{free_in_GB-2}GB'
@@ -389,8 +391,9 @@ def main():
                                                      max_memory=max_memory)
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-v0.1",
                                                   use_fast=False)
+                                                  
         
-    if args.model_name[:3] == "mistral_instruct":
+    if args.model_name == "mistral_instruct":
         torch.cuda.empty_cache()
         free_in_GB = int(torch.cuda.mem_get_info()[0]/1024**3)
         max_memory = f'{free_in_GB-2}GB'
@@ -403,8 +406,19 @@ def main():
                                                      max_memory=max_memory)
         tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1",
                                                   use_fast=False)
-
-    s = Solver(args.model_name, model=model, tokenizer=tokenizer)
+    
+    if args.prompt_dir:
+        try:
+            with open(args.prompt_dir, 'r') as file:
+                examples = file.read().strip().split('\n')
+                prefix = '\n'.join(examples[:args.k]) if args.k > 0 else ''
+        except Exception as e:
+            print(f"Error reading from prompt_dir {args.prompt_dir}: {e}")
+            prefix = "let's think step by step. "  # default prefix
+    else:
+        prefix = "let's think step by step. "  # default prefix
+    prefix = prefix + "let's think step by step if the following matches \n New Example -> "
+    s = Solver(args.model_name, model=model, tokenizer=tokenizer, prefix=prefix)
     s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle)
     return
 
