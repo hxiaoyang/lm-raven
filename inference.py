@@ -230,10 +230,10 @@ class Solver:
         self.context = None
         self.choice_scores = {}
 
-    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False):
+    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False, subset_dir="subset.json"):
         with open("{}/{}.json".format(load_dir,config), "r") as f:
             samples = json.load(f)
-        subset = json.load(open(load_dir+"/subset.json", 'r'))
+        subset = json.load(open(load_dir+subset_dir, 'r'))
         for i in tqdm(subset[:500]):
             if i % 10 < 8:
                 continue
@@ -356,11 +356,12 @@ def main():
     parser.add_argument("--config")
     parser.add_argument("-b", type=int)
     parser.add_argument("-n", type=int)
-    parser.add_argument("-k", type=int)
+    parser.add_argument("-k", type=int, default=0)
     parser.add_argument("--prompt_dir")
     parser.add_argument("--load_dir")
     parser.add_argument("--save_dir")
     parser.add_argument("--add_angle", action='store_true')
+    parser.add_argument("--subset_dir", default="subset.json")
     args = parser.parse_args()
     model, tokenizer = None, None
     if args.model_name == "gpt-3":
@@ -419,7 +420,7 @@ def main():
         prefix = "let's think step by step. "  # default prefix
     prefix = prefix + "let's think step by step if the following matches \n New Example -> "
     s = Solver(args.model_name, model=model, tokenizer=tokenizer, prefix=prefix)
-    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle)
+    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir)
     return
 
 
