@@ -230,7 +230,7 @@ class Solver:
         self.context = None
         self.choice_scores = {}
 
-    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False, subset_dir="subset.json", expieriment_name=""):
+    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False, subset_dir="subset.json", expieriment_name="", print_prompt=False):
         with open("{}/{}.json".format(load_dir,config), "r") as f:
             samples = json.load(f)
         subset = json.load(open(load_dir+subset_dir, 'r'))
@@ -239,9 +239,9 @@ class Solver:
                 continue
             sample = samples[str(i)]
             if b:
-                self.output[i] = self._split(sample, config, n=n, add_angle=add_angle)
+                self.output[i] = self._split(sample, config, n=n, add_angle=add_angle, print_prompt=print_prompt)
             else:
-                self.output[i] = self._merge(sample, config, n=n, add_angle=add_angle)
+                self.output[i] = self._merge(sample, config, n=n, add_angle=add_angle, print_prompt=print_prompt)
         if expieriment_name:
             file_name = f"{len(subset)}_{expieriment_name}.json"
         else:
@@ -252,7 +252,7 @@ class Solver:
             self.output, self.context = {}, None
         return
 
-    def _split(self, sample, config, n=3, add_angle=False):
+    def _split(self, sample, config, n=3, add_angle=False, print_prompt=False):
         ret = []
         rpm = RPM(sample, config, n=n, add_angle=add_angle)
         for i, component in enumerate(rpm.components):
@@ -266,7 +266,7 @@ class Solver:
                     prompt = self.context + choice
                     if n != 1:
                         prompt += ";"
-                    if self.model_name == "null":
+                    if self.model_name == "null" or print_prompt:
                         print(prompt)
                     if choice in self.choice_scores.keys():
                         scores = self.choice_scores[choice]
@@ -366,6 +366,8 @@ def main():
     parser.add_argument("--add_angle", action='store_true')
     parser.add_argument("--subset_dir", default="subset.json")
     parser.add_argument("--expieriment_name")
+    parser.add_argument("--print_prompt", action='store_true')
+
     args = parser.parse_args()
     model, tokenizer = None, None
     if args.model_name == "gpt-3":
@@ -419,7 +421,7 @@ def main():
         prefix = "let's think step by step. "  # default prefix
     prefix = prefix + "let's think step by step if the following matches \n New Example -> "
     s = Solver(args.model_name, model=model, tokenizer=tokenizer, prefix=prefix)
-    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir, expieriment_name=args.expieriment_name)
+    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir, expieriment_name=args.expieriment_name, print_prompt=args.print_prompt)
     return
 
 
