@@ -329,11 +329,12 @@ class Solver:
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
         tokens = self.tokenizer.convert_ids_to_tokens(input_ids[0][1:])
         token_logprobs = []
+        tokens = tokens.todevice("cuda")
         logits = self.model(input_ids).logits
         all_tokens_logprobs = log_softmax(logits.double(), dim=2)
         for k in range(1, input_ids.shape[1]):
             token_logprobs.append(all_tokens_logprobs[:,k-1,input_ids[0,k]])
-        token_logprobs = [lp.detach().numpy()[0] for lp in token_logprobs]
+        token_logprobs = [lp.detach().cpu().numpy()[0] for lp in token_logprobs]
         i = len(self.tokenizer(self.context, return_tensors="pt").input_ids[0]) - 2
         return {"tokens": tokens[i:], "token_logprobs": token_logprobs[i:]}
     
@@ -419,7 +420,7 @@ def main():
             prefix = "let's think step by step. "  # default prefix
     else:
         prefix = "let's think step by step. "  # default prefix
-    prefix = prefix + "let's think step by step if the following matches \n New Example -> "
+    prefix = prefix + "let's think step by step if the following matches the established patterns.\n New Example -> "
     s = Solver(args.model_name, model=model, tokenizer=tokenizer, prefix=prefix)
     s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir, experiment_name=args.experiment_name, print_prompt=args.print_prompt)
     return
