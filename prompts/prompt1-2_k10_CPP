@@ -18,6 +18,6 @@ Valid Example 9 -> row 1: (5,0.6,10), (5,0.4,20), (5,0.2,30); row 2: (7,0.6,50),
 
 Valid Example 10 ->row 1: (4,0.2,30), (4,0.3,20), (4,0.4,10); row 2: (7,0.1,80), (7,0.2,70), (7,0.3,60); row 3: (3,0.3,20), (3,0.4,10), (3,0.5,0);
 
-let's think step by step if the following matches
+let's think step by step if the following matches the established pattern
 
 New Example -> 

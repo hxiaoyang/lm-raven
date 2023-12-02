@@ -284,7 +284,7 @@ class Solver:
                 self.choice_scores = {}
         return ret
 
-    def _merge(self, sample, config, n=3, add_angle=False):
+    def _merge(self, sample, config, n=3, add_angle=False,  print_prompt=False):
         ret = []
         rpm = RPM(sample, config, n=n, add_angle=add_angle)
         if self.model_name == "null":
@@ -294,7 +294,7 @@ class Solver:
             prompt = self.context + choice
             if n != 1:
                 prompt += ";"
-            if self.model_name == "null":
+            if self.model_name == "null" or print_prompt:
                 print(prompt)
             if self.model_name[:3] == "gpt":
                 scores = self._gpt(prompt)
