@@ -367,16 +367,11 @@ def main():
     if args.model_name == "gpt-3":
         openai.api_key = args.api_key
     if args.model_name[:3] == "opt":
-        torch.cuda.empty_cache()
-        free_in_GB = int(torch.cuda.mem_get_info()[0]/1024**3)
-        max_memory = f'{free_in_GB-2}GB'
-        n_gpus = torch.cuda.device_count()
-        max_memory = {i: max_memory for i in range(n_gpus)}
-        print(max_memory)
+        # free_in_GB = int(torch.mps.mem_get_info()[0]/1024**3)
+        # max_memory = f'{free_in_GB-2}GB'
+        # n_gpus = torch.mps.device_count()
         model = AutoModelForCausalLM.from_pretrained("facebook/"+args.model_name,
-                                                     device_map='auto',
-                                                     load_in_8bit=True,
-                                                     max_memory=max_memory)
+                                                     device_map='auto', offload_folder="offload", torch_dtype=torch.float16)
         tokenizer = AutoTokenizer.from_pretrained("facebook/"+args.model_name,
                                                   use_fast=False)
     if args.model_name == "mistral":
