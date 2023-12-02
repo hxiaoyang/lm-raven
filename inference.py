@@ -230,7 +230,7 @@ class Solver:
         self.context = None
         self.choice_scores = {}
 
-    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False, subset_dir="subset.json"):
+    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False, subset_dir="subset.json", expieriment_name=""):
         with open("{}/{}.json".format(load_dir,config), "r") as f:
             samples = json.load(f)
         subset = json.load(open(load_dir+subset_dir, 'r'))
@@ -242,7 +242,10 @@ class Solver:
                 self.output[i] = self._split(sample, config, n=n, add_angle=add_angle)
             else:
                 self.output[i] = self._merge(sample, config, n=n, add_angle=add_angle)
-        file_name = "{}/{}_500_{}_b{}_n{}.json".format(save_dir, config,
+        if expieriment_name:
+            file_name = f"{len(subset)}_{expieriment_name}.json"
+        else:
+            file_name = "{}/{}_500_{}_b{}_n{}.json".format(save_dir, config,
                                                        self.model_name, b, n)
         if self.model_name != "null":
             json.dump(self.output, open(file_name, 'w'), indent=1)
@@ -362,6 +365,7 @@ def main():
     parser.add_argument("--save_dir")
     parser.add_argument("--add_angle", action='store_true')
     parser.add_argument("--subset_dir", default="subset.json")
+    parser.add_argument("--expieriment_name")
     args = parser.parse_args()
     model, tokenizer = None, None
     if args.model_name == "gpt-3":
@@ -415,7 +419,7 @@ def main():
         prefix = "let's think step by step. "  # default prefix
     prefix = prefix + "let's think step by step if the following matches \n New Example -> "
     s = Solver(args.model_name, model=model, tokenizer=tokenizer, prefix=prefix)
-    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir)
+    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir, expieriment_name=args.expieriment_name)
     return
 
 
