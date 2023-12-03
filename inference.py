@@ -235,8 +235,8 @@ class Solver:
             samples = json.load(f)
         subset = json.load(open(load_dir+subset_dir, 'r'))
         for i in tqdm(subset[:500]):
-            if i % 10 < 8:
-                continue
+            # if i % 10 < 8:
+            #     continue
             sample = samples[str(i)]
             if b:
                 self.output[i] = self._split(sample, config, n=n, add_angle=add_angle, print_prompt=print_prompt)
@@ -328,8 +328,8 @@ class Solver:
         ret = {}
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
         tokens = self.tokenizer.convert_ids_to_tokens(input_ids[0][1:])
+        input_ids = input_ids.to("cuda")
         token_logprobs = []
-        tokens = tokens.todevice("cuda")
         logits = self.model(input_ids).logits
         all_tokens_logprobs = log_softmax(logits.double(), dim=2)
         for k in range(1, input_ids.shape[1]):
