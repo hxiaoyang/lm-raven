@@ -230,10 +230,14 @@ class Solver:
         self.context = None
         self.choice_scores = {}
 
-    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False, subset_dir="subset.json", experiment_name="", print_prompt=False):
+    def __call__(self, config, load_dir, save_dir, b=1, n=3, add_angle=False, subset_dir="subset.json", experiment_name="", print_prompt=False, gpt_combine_choices=False):
         with open("{}/{}.json".format(load_dir,config), "r") as f:
             samples = json.load(f)
         subset = json.load(open(load_dir+subset_dir, 'r'))
+        if gpt_combine_choices:
+            self.gpt_complete_combine_choices(subset, samples, config, n=n, add_angle=add_angle, print_prompt=print_prompt)
+            return
+    
         for i in tqdm(subset[:500]):
             # if i % 10 < 8:
             #     continue
@@ -307,6 +311,61 @@ class Solver:
             ret.append(scores)
         return ret
     
+    def gpt_complete_combine_choices(self, subset, samples, config, n=3, add_angle=False, print_prompt=False):
+        correct = 0
+        end = 50
+        for i in tqdm(subset[:end]):
+            sample = samples[str(i)]
+            correct += self.prompting(sample, config, n=n, add_angle=add_angle, print_prompt=print_prompt)
+               
+        print("Accuracy: ", correct/len(subset[:end]))
+
+    def prompting(self, sample, config, n=3, add_angle=False,  print_prompt=False):
+        prompt_prefix = "Select the correct choice:\n"
+        one_shot_prefix = '''Solve the Raven Progressive Matrices problem. For example,
+Q: row1:(6,0.6,50),(5,0.6,70),(4,0.6,90)
+row2:(6,0.4,0),(5,0.4,20),(4,0.4,40)
+row3:(6,0.5,20),(5,0.5,40),
+Choices:(4,0.5,60),(4,0.5,0),(4,0.1,60),(6,0.5,60),(3,0.5,60),(5,0.5,60),(4,0.5,90),(7,0.5,60)
+A:
+(4,0.5,60)
+Now, select the correct choice for this problem:'''
+        cot_prompting_prefix = '''Solve the Raven Progressive Matrices problem. For example,
+Q: row1:(6,0.6,50),(5,0.6,70),(4,0.6,90)
+row2:(6,0.4,0),(5,0.4,20),(4,0.4,40)
+row3:(6,0.5,20),(5,0.5,40),
+Choices:(4,0.5,60),(4,0.5,0),(4,0.1,60),(6,0.5,60),(3,0.5,60),(5,0.5,60),(4,0.5,90),(7,0.5,60)
+A: Let's solve step by step. The first number in each set decreases by 1 for each row. So, for row 3, the first number should indeed be 6-1-1=4. The second number in each set remains constant within each row. Therefore, for the third item in row 3, the second number should remain at 0.5, consistent with the rest of the row. The third number increases by 20 each time within a row. In row 3, the sequence starts at 20, then 40, and logically, the next number should be 20 + 20 + 20 = 60. Therefore, the answer is (4,0.5,60)
+
+Now, select the correct choice for this problem:'''
+        rpm = RPM(sample, config, n=n, add_angle=add_angle)
+        questions = rpm.context.replace(' ','').split(";")
+        questions = [line.strip() for line in questions]
+        questions = "\n".join(questions)
+        self.context = self.prefix + rpm.context
+        prompt = cot_prompting_prefix + questions + '\nChoices:' + ','.join(rpm.choices)
+        print(prompt)
+        res = self._gpt_complete(prompt)
+        print(res == rpm.choices[0])
+        return 1 if res == rpm.choices[0] else 0
+    
+    def _gpt_complete(self, prompt):
+        ret = {}
+        response = openai.Completion.create(model="text-davinci-003",
+                                            prompt=prompt,
+                                            temperature=0,
+                                            max_tokens=300,
+                                            top_p=1,
+                                            frequency_penalty=0,
+                                            presence_penalty=0,
+                                            echo=True)
+        if response["choices"][0]["text"][-1] == '.':
+            gpt_choice = gpt_choice = response["choices"][0]["text"][-11:-1]
+        else:
+            gpt_choice =response["choices"][0]["text"][-10:]
+        print("GPT choice: ", gpt_choice)
+        return gpt_choice
+
     def _gpt(self, prompt):
         ret = {}
         response = openai.Completion.create(model="text-davinci-002",
@@ -368,6 +427,7 @@ def main():
     parser.add_argument("--subset_dir", default="subset.json")
     parser.add_argument("--experiment_name")
     parser.add_argument("--print_prompt", action='store_true')
+    parser.add_argument("--is_gpt_combine_choices", type=bool, default=False)
 
     args = parser.parse_args()
     model, tokenizer = None, None
@@ -422,7 +482,7 @@ def main():
         prefix = "let's think step by step. "  # default prefix
     prefix = prefix + "let's think step by step if the following matches the established patterns.\n New Example -> "
     s = Solver(args.model_name, model=model, tokenizer=tokenizer, prefix=prefix)
-    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir, experiment_name=args.experiment_name, print_prompt=args.print_prompt)
+    s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle, subset_dir=args.subset_dir, experiment_name=args.experiment_name, print_prompt=args.print_prompt, gpt_combine_choices=args.is_gpt_combine_choices)
     return
 
 
