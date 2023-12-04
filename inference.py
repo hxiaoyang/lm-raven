@@ -316,38 +316,43 @@ class Solver:
         end = 50
         for i in tqdm(subset[:end]):
             sample = samples[str(i)]
-            correct += self.prompting(sample, config, n=n, add_angle=add_angle, print_prompt=print_prompt)
+            correct += self.prompting(sample, config, n=n, add_angle=add_angle, print_prompt=print_prompt, i=str(i))
                
         print("Accuracy: ", correct/len(subset[:end]))
 
-    def prompting(self, sample, config, n=3, add_angle=False,  print_prompt=False):
-        prompt_prefix = "Select the correct choice:\n"
+    def prompting(self, sample, config, n=3, add_angle=False,  print_prompt=False, i=None):
+        question_prefix = "Select the correct choice for this problem:\n"
         one_shot_prefix = '''Solve the Raven Progressive Matrices problem. For example,
 Q: row1:(6,0.6,50),(5,0.6,70),(4,0.6,90)
 row2:(6,0.4,0),(5,0.4,20),(4,0.4,40)
 row3:(6,0.5,20),(5,0.5,40),
 Choices:(4,0.5,60),(4,0.5,0),(4,0.1,60),(6,0.5,60),(3,0.5,60),(5,0.5,60),(4,0.5,90),(7,0.5,60)
-A:
-(4,0.5,60)
-Now, select the correct choice for this problem:'''
+A:(4,0.5,60)\n'''
         cot_prompting_prefix = '''Solve the Raven Progressive Matrices problem. For example,
 Q: row1:(6,0.6,50),(5,0.6,70),(4,0.6,90)
 row2:(6,0.4,0),(5,0.4,20),(4,0.4,40)
 row3:(6,0.5,20),(5,0.5,40),
 Choices:(4,0.5,60),(4,0.5,0),(4,0.1,60),(6,0.5,60),(3,0.5,60),(5,0.5,60),(4,0.5,90),(7,0.5,60)
-A: Let's solve step by step. The first number in each set decreases by 1 for each row. So, for row 3, the first number should indeed be 6-1-1=4. The second number in each set remains constant within each row. Therefore, for the third item in row 3, the second number should remain at 0.5, consistent with the rest of the row. The third number increases by 20 each time within a row. In row 3, the sequence starts at 20, then 40, and logically, the next number should be 20 + 20 + 20 = 60. Therefore, the answer is (4,0.5,60)
-
-Now, select the correct choice for this problem:'''
+A: Let's solve step by step. The first number in each set decreases by 1 for each row. So, for row 3, the first number should indeed be 6-1-1=4. The second number in each set remains constant within each row. Therefore, for the third item in row 3, the second number should remain at 0.5, consistent with the rest of the row. The third number increases by 20 each time within a row. In row 3, the sequence starts at 20, then 40, and logically, the next number should be 20 + 20 + 20 = 60. Therefore, the answer is (4,0.5,60)\n'''
+        two_shot_prefix = '''Another example is that,
+Q: row1:(4,0.4,50),(3,0.5,30),(6,0.6,10)
+row2:(6,0.4,40),(4,0.5,20),(3,0.6,0)
+row3:(3,0.1,40),(6,0.2,20),
+Choices:(4,0.3,0),(4,0.3,10),(4,0.3,80),(4,0.2,0),(6,0.3,0),(4,0.3,70),(4,0.3,40),(3,0.3,0)
+A:(4,0.3,0)\n'''
         rpm = RPM(sample, config, n=n, add_angle=add_angle)
         questions = rpm.context.replace(' ','').split(";")
         questions = [line.strip() for line in questions]
         questions = "\n".join(questions)
         self.context = self.prefix + rpm.context
-        prompt = cot_prompting_prefix + questions + '\nChoices:' + ','.join(rpm.choices)
+        prompt = one_shot_prefix + question_prefix + questions + '\nChoices:' + ','.join(rpm.choices)
+        if i != None:
+            print(f"Q{i}")
         print(prompt)
         res = self._gpt_complete(prompt)
         print(res == rpm.choices[0])
-        return 1 if res == rpm.choices[0] else 0
+        print("----")
+        return 1 if res == rpm.choices[0].strip() else 0
     
     def _gpt_complete(self, prompt):
         ret = {}
@@ -360,9 +365,9 @@ Now, select the correct choice for this problem:'''
                                             presence_penalty=0,
                                             echo=True)
         if response["choices"][0]["text"][-1] == '.':
-            gpt_choice = gpt_choice = response["choices"][0]["text"][-11:-1]
+            gpt_choice = gpt_choice = response["choices"][0]["text"][-11:-1].strip()
         else:
-            gpt_choice =response["choices"][0]["text"][-10:]
+            gpt_choice =response["choices"][0]["text"][-10:].strip()
         print("GPT choice: ", gpt_choice)
         return gpt_choice
 
