@@ -318,7 +318,6 @@ class Solver:
         return ret
 
     def _opt(self, prompt):
-        ret = {}
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
         tokens = self.tokenizer.convert_ids_to_tokens(input_ids[0][1:])
         token_logprobs = []
