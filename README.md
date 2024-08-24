@@ -1,10 +1,10 @@
 # In-Context Analogical Reasoning with Pre-Trained Language Models
-Official GitHub repository for ACL 2023 paper [In-Context Analogical Reasoning with Pre-Trained Language Models](https://aclanthology.org/2023.acl-long.109/).
+Code for ACL 2023 paper [In-Context Analogical Reasoning with Pre-Trained Language Models](https://aclanthology.org/2023.acl-long.109/).
 
 ## Getting Started
 
 ### Datasets
-* Download RAVEN-10000 [here](https://drive.google.com/file/d/111swnEzAY2NfZgeyAhVwQujMjRUfeyuY/view).
+* Download RAVEN-10000 [here](https://wellyzhang.github.io/project/raven.html).
 * Follow instructions [here](https://github.com/husheng12345/SRAN) to generate the I-RAVEN dataset.
 
 ### Python Dependencies
