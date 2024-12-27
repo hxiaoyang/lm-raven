@@ -37,8 +37,7 @@ class Shape:
 
     def __str__(self):
         if self.add_angle:
-            return "({},{},{},{})".format(self.type, self.size/10,
-                                          self.color*10, self.angle*100)
+            return "({},{},{},{})".format(self.type, self.size/10, self.color*10, self.angle*100)
         else:
             return "({},{},{})".format(self.type, self.size/10, self.color*10)
 
@@ -242,8 +241,7 @@ class Solver:
                 self.output[i] = self._split(sample, config, n=n, add_angle=add_angle)
             else:
                 self.output[i] = self._merge(sample, config, n=n, add_angle=add_angle)
-        file_name = "{}/{}_500_{}_b{}_n{}.json".format(save_dir, config,
-                                                       self.model_name, b, n)
+        file_name = "{}/{}_500_{}_b{}_n{}.json".format(save_dir, config, self.model_name, b, n)
         if self.model_name != "null":
             json.dump(self.output, open(file_name, 'w'), indent=1)
             self.output, self.context = {}, None
@@ -302,15 +300,17 @@ class Solver:
     
     def _gpt(self, prompt):
         ret = {}
-        response = openai.Completion.create(model="text-davinci-002",
-                                            prompt=prompt,
-                                            temperature=0,
-                                            max_tokens=0,
-                                            top_p=1,
-                                            logprobs=5,
-                                            frequency_penalty=0,
-                                            presence_penalty=0,
-                                            echo=True)
+        response = openai.Completion.create(
+            model="text-davinci-002",
+            prompt=prompt,
+            temperature=0,
+            max_tokens=0,
+            top_p=1,
+            logprobs=5,
+            frequency_penalty=0,
+            presence_penalty=0,
+            echo=True
+        )
         logprobs = response["choices"][0]["logprobs"]
         i = logprobs["text_offset"].index(len(self.context)-1)
         for k in ["tokens", "token_logprobs"]:
@@ -351,12 +351,16 @@ def main():
         n_gpus = torch.cuda.device_count()
         max_memory = {i: max_memory for i in range(n_gpus)}
         print(max_memory)
-        model = AutoModelForCausalLM.from_pretrained("facebook/"+args.model_name,
-                                                     device_map='auto',
-                                                     load_in_8bit=True,
-                                                     max_memory=max_memory)
-        tokenizer = AutoTokenizer.from_pretrained("facebook/"+args.model_name,
-                                                  use_fast=False)
+        model = AutoModelForCausalLM.from_pretrained(
+            "facebook/"+args.model_name,
+            device_map='auto',
+            load_in_8bit=True,
+            max_memory=max_memory
+        )
+        tokenizer = AutoTokenizer.from_pretrained(
+            "facebook/"+args.model_name,
+            use_fast=False
+        )
     s = Solver(args.model_name, model=model, tokenizer=tokenizer)
     s(args.config, args.load_dir, args.save_dir, b=args.b, n=args.n, add_angle=args.add_angle)
     return
